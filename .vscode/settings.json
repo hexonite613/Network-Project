@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "unistd.h": "c"
+        
+    },
+    "C_Cpp.codeAnalysis.runAutomatically": true
+}
