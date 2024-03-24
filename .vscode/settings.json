@@ -1,7 +1,9 @@
 {
     "files.associations": {
-        "unistd.h": "c"
-        
+        "unistd.h": "c",
+        "in.h": "c",
+        "stdlib.h": "c"
     },
-    "C_Cpp.codeAnalysis.runAutomatically": true
+    "C_Cpp.codeAnalysis.runAutomatically": true,
+    "C_Cpp.errorSquiggles": "enabled"
 }

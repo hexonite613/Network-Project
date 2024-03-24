@@ -1,3 +1,4 @@
+//Includes libraries
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -5,13 +6,40 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 
+//initalize buffer_size to reduce memory usage
+#define BUFFER_SIZE 1000
+
 //initalizing server structure
 struct sockaddr_in server_addr;
 //initalizing client structure
 struct sockaddr_in client_addr;
 
+//method to handle request
 void handle_request(int client_socket){
-    //start from here
+    //initialize buffer
+    char buffer[BUFFER_SIZE];
+    
+    //initialize size of buffer received
+    ssize_t leng_received;
+    //get received length
+    leng_received=recv(client_socket,buffer,BUFFER_SIZE,0);
+    
+    //if received -1 for an error
+    if(leng_received<0){
+        //alert user
+        perror("Error receiving from client");
+        //close socket
+        close(client_socket);
+        return;
+    }
+
+    //print request has been received
+    printf("Received request:\n%s",buffer);
+
+
+    //continue
+    const char* response="";
+
 }
 
 
@@ -90,7 +118,8 @@ int main(int num, char *save[]){
             //keep on trying
             continue;
         }
-        //handle request method here
+        //call handle_request method to parse client request
+        handle_request(client_socket);
     }
 
     //close server socket
