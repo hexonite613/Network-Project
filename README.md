@@ -15,5 +15,5 @@
   - ex)using port number 8080: ``` ./myserver 8080 ```
 
 ## ✏️To-Do List
-- Finish with server file
+- ~~Finish with server file~~
 - Make other types of files to be readable
