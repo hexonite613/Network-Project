@@ -9,6 +9,7 @@
 
 //initalize buffer_size to reduce memory usage
 #define BUFFER_SIZE 1000
+#define SERVER_DIRE "/home/hexonite/network project/"
 
 //initalizing server structure
 struct sockaddr_in server_addr;
@@ -38,33 +39,36 @@ void handle_request(int client_socket){
     printf("Received request:\n%s",buffer);
 
 
-    //initialize length of path
-    char response_reque[BUFFER_SIZE];
-    //Extract file path
-    sscanf(buffer,"GET %s HTTP/1.1",response_reque);
+    //parse the request
+    char method[10], path[256];
+    sscanf(buffer, "%s %s", method, path);
 
-    //delete '/' in the path
-    memmove(response_reque,response_reque+1,strlen(response_reque));
-    //Open requested file(Read-Only)
-    int reque_file=open(response_reque,O_RDONLY);
-    
-    //edit file path
-    
-    //Check if file was opened successflly
-    if(reque_file<0){
-        //alert user
-        perror("Error while opening file");
-        //cannot execute further so exit
-        close(client_socket);
-        //return void
-        return;
-    }
+    //open the requested file
+    FILE *file = fopen(&path[1], "r");
 
-    ssize_t file_leng;
-    while((file_leng=read(reque_file,buffer,BUFFER_SIZE))>0){
-        send(client_socket,buffer,file_leng,0);
+    //if file was not found
+    if (file == NULL) {
+        // send 404 code(file not found)
+        char not_found[] = "HTTP/1.1 404 Not Found\r\nContent-Type: text/html\r\n\r\n<html><body><h1>404 Not Found</h1></body></html>";
+        //alert user file was not found
+        send(client_socket, not_found, strlen(not_found), 0);
+    
     }
-    close(reque_file);
+    //to return found file 
+    else {
+        // send code 200(successfully found)
+        char response_header[] = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n";
+        //send success code in header file to client
+        send(client_socket, response_header, strlen(response_header), 0);
+        //send file to client until end of the file
+        while ((leng_received = fread(buffer, 1, BUFFER_SIZE, file)) > 0) {
+            //send file to client
+            send(client_socket, buffer, leng_received, 0);
+        }
+        //close opened file
+        fclose(file);
+    }
+    //close client socket
     close(client_socket);
 }
 
