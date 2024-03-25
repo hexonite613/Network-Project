@@ -5,6 +5,7 @@
 #include <unistd.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <fcntl.h>
 
 //initalize buffer_size to reduce memory usage
 #define BUFFER_SIZE 1000
@@ -37,9 +38,34 @@ void handle_request(int client_socket){
     printf("Received request:\n%s",buffer);
 
 
-    //continue
-    const char* response="";
+    //initialize length of path
+    char response_reque[BUFFER_SIZE];
+    //Extract file path
+    sscanf(buffer,"GET %s HTTP/1.1",response_reque);
 
+    //delete '/' in the path
+    memmove(response_reque,response_reque+1,strlen(response_reque));
+    //Open requested file(Read-Only)
+    int reque_file=open(response_reque,O_RDONLY);
+    
+    //edit file path
+    
+    //Check if file was opened successflly
+    if(reque_file<0){
+        //alert user
+        perror("Error while opening file");
+        //cannot execute further so exit
+        close(client_socket);
+        //return void
+        return;
+    }
+
+    ssize_t file_leng;
+    while((file_leng=read(reque_file,buffer,BUFFER_SIZE))>0){
+        send(client_socket,buffer,file_leng,0);
+    }
+    close(reque_file);
+    close(client_socket);
 }
 
 
@@ -59,6 +85,7 @@ int main(int num, char *save[]){
     if(port<=1024){
         //alert user
         printf("use port number larger than 1024");
+        //cannot execute further so exit
         exit(EXIT_FAILURE);
     }
 
