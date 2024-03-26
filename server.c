@@ -6,9 +6,11 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <fcntl.h>
+#include <libgen.h>
 
 //initalize buffer_size to reduce memory usage
 #define BUFFER_SIZE 1000
+//need to change server directory into relative directory
 #define SERVER_DIRE "/home/hexonite/network project/"
 
 //initalizing server structure
@@ -38,10 +40,12 @@ void handle_request(int client_socket){
     //print request has been received
     printf("Received request:\n%s",buffer);
 
-
     //parse the request
     char method[10], path[256];
     sscanf(buffer, "%s %s", method, path);
+
+    //getting file extension
+    char* file_path= basename(path);
 
     //open the requested file
     FILE *file = fopen(&path[1], "r");
@@ -56,8 +60,11 @@ void handle_request(int client_socket){
     }
     //to return found file 
     else {
+        //bring found file extension
+        const char* file_ext=get_file_extension(path);
         // send code 200(successfully found)
-        char response_header[] = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n";
+        char response_header[256];
+        sprintf(response_header, "HTTP/1.1 200 OK\r\nContent-Type: %s\r\n\r\n",file_ext);
         //send success code in header file to client
         send(client_socket, response_header, strlen(response_header), 0);
         //send file to client until end of the file
@@ -72,6 +79,34 @@ void handle_request(int client_socket){
     close(client_socket);
 }
 
+
+
+//error on defining method
+//initialize get file extension method
+const char* get_file_extension(const char* filename){
+    const char* dot=strrchr(filename,'.');
+    //if no file extension were found
+    if(!dot){
+        return "text/plain";
+    }
+    //for html
+    if(strcmp(dot,".html")==0){
+        return "text/html";
+    }
+    if(strcmp(dot,".gif")==0){
+        return "image/gif";  
+    }
+    if(strcmp(dot,".jpeg")==0){
+        return "image/jpeg";  
+    }
+    if(strcmp(dot,".mp3")==0){
+        //need to fix mp3 file format
+        return "application/mp3";
+    }
+    if(strcmp(dot,".pdf")==0){
+        return "application/pdf";  
+    }
+}
 
 //main function(num is number of parameter from client and save is where we store parameters)
 int main(int num, char *save[]){
