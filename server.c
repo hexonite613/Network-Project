@@ -18,8 +18,8 @@
 
 //initalize buffer_size
 #define BUFFER_SIZE 1000
-//need to change server directory into relative directory
-#define SERVER_DIRE "/home/hexonite/network project/"
+//find resource_files folder
+#define SERVER_DIRE "./resource_files"
 
 //initalizing server structure
 struct sockaddr_in server_addr;
@@ -90,13 +90,15 @@ void handle_request(int client_socket){
     //initialize path and method
     char path[256];
     //parse the request(initial part represent method but since it will be not used, just skipped)
-    sscanf(buffer, "*%s %s", path);
+    sscanf(buffer, "%*s %s", path);
 
-    //getting file extension
-    char* file_path= basename(path);
+    //initialize full path
+    char full_path[BUFFER_SIZE];
+    //combine server_dire and file path into full_path
+    snprintf(full_path, BUFFER_SIZE, "%s%s", SERVER_DIRE, path);
 
     //open the requested file(read-only)
-    FILE *file = fopen(&path[1], "r");
+    FILE *file = fopen(full_path, "r");
 
     //if file was not found
     if (file == NULL) {
